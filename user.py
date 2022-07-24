@@ -29,7 +29,7 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 logger = logging.getLogger(__name__)
 
 
-bot = Bot(token="SAMPLE")
+bot = Bot(token="SAMLE")
 
 message = {
     "kh" : "<b>Are you <i>Knowledge Hungry</i></b>, What do you think?\nWhy not test your intellect with some brain teasing challenges💪🧠",
@@ -274,30 +274,34 @@ class Player:
         # Saving 'RGB' image into IO Buffer
         bio = BytesIO()
         bio.name = "pie_chart"
-        plt.savefig(bio, dpi=150)
+        plt.savefig(bio, transparent=True, dpi=150)
 
         ##### Converting the 'RGB' image into 'RGBA' format & then removing background ############
+        #bio.seek(0)
 
-        image = Image.open(bio)
-        image.convert('RGBA')
+        #image = Image.open(bio)
+        #image.convert('RGBA')
+        
+        #bio.flush()
+        #bio.close()
 
-        data = image.getdata()
-        new_data = []
+        #data = image.getdata()
+        #new_data = []
         
         # Removing white background of the pie chart image
-        for pixel_triplet in data:
-            if pixel_triplet[0] == 255 and pixel_triplet[1] == 255 and pixel_triplet[2] == 255: 
-                new_data.append((0, 0, 0, 0))
-            else:
-                new_data.append(pixel_triplet)
+        #for pixel_triplet in data:
+        #    if pixel_triplet[0] == 255 and pixel_triplet[1] == 255 and pixel_triplet[2] == 255: 
+        #        new_data.append((255, 255, 255, 0))
+        #    else:
+        #        new_data.append(pixel_triplet)
 
-        image.putdata(new_data)
+        #image.putdata(new_data)
 
         # Saving new image again in IO Buffer
-        bio = BytesIO()
-        bio.name = "pie_chart"
-        bio.seek(0)
-        image.save(bio, 'PNG')
+        #bio = BytesIO()
+        #bio.name = "pie_chart"
+        
+        #image.save(bio, 'PNG')
 
         # Sending the sticker to the Player
         bio.seek(0)
@@ -553,6 +557,10 @@ class Multiplayer(Quiz):
         print("ID generated successfully - ", self.multiplayer_quiz_id)
 
     def joining_request_reciever(self, chat_id, context):
+        if chat_id in self.players.keys():
+            # When user clicks start multplayer battle switch multiple time so just returning with any operation
+            return
+        
         self.players[chat_id] = Player(chat_id, 15)
         self.players[chat_id].total_questions = 15
 
@@ -778,13 +786,15 @@ class Multiplayer(Quiz):
             print("Window closer called id = {}- ".format(self.multiplayer_quiz_id), threading.current_thread())
             return schedule.CancelJob
 
-        global ongoing_multiplayer_quiz_objects
+        global opened_window_multiplayer_object 
+        
         # Constraint of minimum 3 players to start a multiplayer quiz battle
+        
         if len(self.players.keys()) < 3:
             for chat_id in self.players.keys():
                 bot.send_message(chat_id, "Sorry, Insuficient no of players.You can take single player quiz.\n<b>Click - /solo_quiz</b>", parse_mode = ParseMode.HTML)
                 previous_message_sent[chat_id] = 'qe'
-            ongoing_multiplayer_quiz_objects = None
+            opened_window_multiplayer_object = None
             return schedule.CancelJob
 
         self.is_window_closed = True
@@ -795,10 +805,9 @@ class Multiplayer(Quiz):
             self.send_question(chat_id, context)
 
         print("Quiz compeleted players count = ", self.players_quiz_completed_count)
-
-        global opened_window_multiplayer_object 
-        #global ongoing_multiplayer_quiz_objects
-
+        
+        global ongoing_multiplayer_quiz_objects
+        
         ongoing_multiplayer_quiz_objects[self.multiplayer_quiz_id] = opened_window_multiplayer_object
         opened_window_multiplayer_object = None
         return schedule.CancelJob
@@ -809,16 +818,16 @@ class Multiplayer(Quiz):
         # Scheduling the functions
 
         # Window closer 
-        schedule.every(15).seconds.do(self.window_closer, context)
+        schedule.every(7).seconds.do(self.window_closer, context)
         
         # reamining time alert when 2 minutes left
-        schedule.every(15 + 6*60).seconds.do(self.remaining_time_alter)
+        schedule.every(7 + 6*60).seconds.do(self.remaining_time_alter)
         
         # Leaderboard generator
-        schedule.every(15 + 6*60 + 60).seconds.do(self.multiplayer_quiz_closer)
+        schedule.every(7 + 6*60 + 60).seconds.do(self.multiplayer_quiz_closer)
         
         # Multiplayer objects deletion functions
-        print(schedule.get_jobs())
+        #print(schedule.get_jobs())
 
     def window_opener(self, chat_id, context):
         # Joining the first player of the multiplayer quiz competition 
@@ -954,14 +963,17 @@ def set_player_name(chat_id, name):
 
 def multiplayer_quiz_initiator(chat_id, context):
     global opened_window_multiplayer_object
+    print(opened_window_multiplayer_object)
     
     if opened_window_multiplayer_object is None:
         print("Creating new window")
         opened_window_multiplayer_object = Multiplayer()
         opened_window_multiplayer_object.window_opener(chat_id, context)
     else:
-        print("Addning player to opened window")
+        print("Adding player to opened window")
         opened_window_multiplayer_object.joining_request_reciever(chat_id, context)
+
+
 
 ############ User Interation handling functions ###################
 
@@ -1047,7 +1059,6 @@ def graph_generator(chat_id, marks, quiz_index, topic_wise_bar_colors):
     # Saving the final Image to the Buffer memory
     bio = BytesIO()
     bio.name = "combined_image"
-    bio.seek(0)
     combined_image.save(bio, 'PNG')
 
     # Sending the Image to the user
@@ -1090,17 +1101,19 @@ def players_pa_generator(chat_id):
     graph_generator(chat_id, marks, quiz_index, topic_wise_bar_colors)
 
 
-
     ############# Creating the message #############################################
     message = "<b>Here is your performance 📊 in the single player mode : </b>(Solo Quiz + Pratice Arena)\n\n"
     message += "<i>Total quiz attempted :</i> <b>{}</b>\n".format(len(data))
     
     del data
 
+    # Overall average marks
     message += "<i>Overall average marks :</i> <b>{:.2f}%</b>\n".format(float(execute_query("select avg(marks) from SINGLE_PLAYER_QUIZ_RECORDS where chat_id={};".format(chat_id))[0]["avg"]))
 
+    # Average time taken per second
     message += "<i>Average time taken per que :</i> <b>{:.2f} secs</b>\n\n".format(float(execute_query("select avg(time_per_que) from SINGLE_PLAYER_QUIZ_RECORDS where chat_id={};".format(chat_id))[0]["avg"]))
 
+    # Best performance of of the user
     best_performance = execute_query("select marks, time_per_que, topic from SINGLE_PLAYER_QUIZ_RECORDS where chat_id={} and marks=(select max(marks) from SINGLE_PLAYER_QUIZ_RECORDS where chat_id={});".format(chat_id, chat_id))
     message += "<b>Best Performance(s):</b>\n    <i>Marks</i> <b>|</b> <i>Time per que</i> <b>|</b> <i>Topic</i>\n"
     
@@ -1109,6 +1122,8 @@ def players_pa_generator(chat_id):
             float(row["marks"]), float(row["time_per_que"]), topics[int(row["topic"])]
         )
 
+
+    # Worst performance of the user
     worst_performance = execute_query("select marks, time_per_que, topic from SINGLE_PLAYER_QUIZ_RECORDS where chat_id={} and marks=(select min(marks) from SINGLE_PLAYER_QUIZ_RECORDS where chat_id={});".format(chat_id, chat_id))
     message += "\n<b>Worst Performance(s):</b>\n    <i>Marks</i> <b>|</b> <i>Time per que</i> <b>|</b> <i>Topic</i>\n"
     
@@ -1117,6 +1132,7 @@ def players_pa_generator(chat_id):
             float(row["marks"]), float(row["time_per_que"]), topics[int(row["topic"])]
         )
 
+    # Top 3 strogest topics average marks
     best_topics = execute_query("select avg(marks), topic from SINGLE_PLAYER_QUIZ_RECORDS where chat_id={} group by topic order by avg(marks) desc limit 3;".format(chat_id))
     message += "\n<b>Your strongest topics with average marks:</b>\n"
     
@@ -1125,6 +1141,7 @@ def players_pa_generator(chat_id):
             topics[int(row["topic"])], float(row["avg"])
         )
 
+    # Topic with most quizzes attempted by the user 
     message += "\n<i>Topic in which most quizzes were given by you :</i> "
 
     most_quizzed = execute_query("select count(topic), topic from SINGLE_PLAYER_QUIZ_RECORDS where chat_id={} group by topic order by count(topic) desc limit 1;".format(chat_id))
@@ -1192,16 +1209,24 @@ def multiplayer_quiz_ranking_generator(chat_id):
     ############ Creating user specific multiplayer performance report ########################
     user_performance_message = "<b>Your performance in multiplyer quiz competition(s):</b>\n\n"
 
+    # Total multiplayer quizzesin which user participated 
     total_attempts = execute_query("select count(chat_id) from MULTIPLAYER_QUIZ_PLAYERS_PERFORMANCE where chat_id={};".format(chat_id))[0]["count"]
     user_performance_message += "<i>Total multiplayer quiz attempted </i>: <b>{}</b>\n".format(total_attempts)
+    
+    # Overall rank of the user in the leaderboard
     user_performance_message += "<i>Overall leaderboard rank </i>: <b>{}</b>\n".format(current_player_rank)
+    
+    # Overall average score of the user in the multiplayer quiz competition
     user_performance_message += "<i>Overall score </i>: <b>{:.2f}</b>\n".format(current_player_score)
 
+    # higest score attain by user
     user_performance_message += "\n<i>Highest score </i>: <b>{:.2f}</b>\n".format(execute_query("select max(score) from MULTIPLAYER_QUIZ_PLAYERS_PERFORMANCE where chat_id={};".format(chat_id))[0]["max"])
     
+    # Lowest score of the user
     if total_attempts > 1:
         user_performance_message += "<i>Lowest score </i>: <b>{:.2f}</b>\n".format(execute_query("select min(score) from MULTIPLAYER_QUIZ_PLAYERS_PERFORMANCE where chat_id={};".format(chat_id))[0]["min"])
 
+    # User's best rank among all the multiplayer battle
     best_rank = execute_query("""
             select mqpp.leaderboard_rank, mqr.players_count from
             MULTIPLAYER_QUIZ_PLAYERS_PERFORMANCE mqpp,
@@ -1212,6 +1237,8 @@ def multiplayer_quiz_ranking_generator(chat_id):
 
     user_performance_message += "\n<i>Best rank </i>: <b>{}</b> out of <b>{}</b> players\n".format(best_rank[0]["leaderboard_rank"], best_rank[0]["players_count"])
 
+
+    # Sending the message back to user
     bot.send_message(chat_id, user_performance_message, reply_markup=InlineKeyboardMarkup(inline_keyboards["qe"]), parse_mode=ParseMode.HTML)
 
     previous_message_sent[chat_id] = "qe"
@@ -1271,6 +1298,7 @@ def main_menu_handler(chat_id, option):
         with open("Resources/Stickers/text_please.tgs", "rb") as sticker:
             bot.send_sticker(chat_id, sticker)
 
+        # Sending the instructions to the user to write the message which will be send to the admin via email
         bot.send_message(chat_id, get_message('ir'), parse_mode=ParseMode.HTML)
 
         previous_message_sent[chat_id] = 'ir'

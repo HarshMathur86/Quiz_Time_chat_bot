@@ -261,13 +261,13 @@ def main():
     dispatcher.add_handler(CommandHandler("services", services))
 
     ######### admin commands ################
-    dispatcher.add_handler(CommandHandler("announce", announcement_initiator, run_async=True))    
+    dispatcher.add_handler(CommandHandler("announce", announcement_initiator))    
     #########################################
 
-    dispatcher.add_handler(MessageHandler(Filters.text & ~Filters.command, text_message_handler, run_async=True))
+    dispatcher.add_handler(MessageHandler(Filters.text & ~Filters.command, text_message_handler))
     dispatcher.add_handler(MessageHandler(Filters.photo, image_handler))
-    dispatcher.add_handler(CallbackQueryHandler(option_selector, run_async=True))
-    dispatcher.add_handler(PollHandler(poll_handler, run_async=True))
+    dispatcher.add_handler(CallbackQueryHandler(option_selector))
+    dispatcher.add_handler(PollHandler(poll_handler))
     
     updater.start_polling()
 
