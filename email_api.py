@@ -1,6 +1,12 @@
 from mailjet_rest import Client
+import logging 
 
 from database import execute_query
+
+# Enabling Logging
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
+
+logger = logging.getLogger(__name__)
 
 def issue_alert_email_sender(message, username):
 	message = message.replace("\n", "<br>")
@@ -25,7 +31,9 @@ def issue_alert_email_sender(message, username):
 	}
 
 	result = mailjet.send.create(data=data)
+	
 	if result.status_code == 200:
+		logger.info("alert email successfully sent to admin")
 		return True
 	else:
 		return False

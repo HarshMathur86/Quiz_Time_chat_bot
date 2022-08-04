@@ -30,9 +30,10 @@ def start(update: Update, context: CallbackContext) -> None:
     update.message.reply_text("Hi <b>{}!</b>".format(str(update.message.from_user.full_name)), parse_mode=ParseMode.HTML)
     update.message.reply_text("<b>I am here to help you improve your proficiency through stunning quizzes.</b>", reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=ParseMode.HTML)
     
-    update_chat_id(update.message.chat_id)
-
     logger.info("{} - start command initiated".format(update.message.chat_id))
+    
+    update_chat_id(update.message.chat_id)
+    
     previous_message_sent[update.message.chat_id] = 's'
 
 
@@ -51,7 +52,7 @@ def help(update: Update, _:CallbackContext):
     update.message.reply_text(get_message("help"), parse_mode=ParseMode.HTML)
 
     if validate_admin(update.message.chat_id):
-        update.message.reply_text("<b>Welcome, Admin following command is for you</b>\n\n/announce - <i>for making an annoumcement to all the users of the bot</i>\n\nAlso, you can see the issues reported by the users in your registered email.", parse_mode=ParseMode.HTML)
+        update.message.reply_text("<b>Welcome, Admin following command is for you</b>\n\n/announce - <i>for making an announcement to all the users of the bot</i>\n\nAlso, you can see the issues reported by the users in your registered email.", parse_mode=ParseMode.HTML)
 
     logger.info("{} - help command initiated".format(update.message.chat_id))
 
@@ -66,16 +67,17 @@ def services(update: Update, _:CallbackContext):
 def text_message_handler(update: Update, _:CallbackContext):
     logger.info("{} - text message recieved".format(update.message.chat_id))
     chat_id = update.message.chat_id
-    print(update.message.text)
+
     try:
         if previous_message_sent[chat_id] == 'pnr': # pnr - player's name recieving
-            print("Validating player name")
+            logger.info("{} - validating player's name for multiplayer quiz".format(update.message.chat_id))
             set_player_name(chat_id, update.message.text)
         
         elif previous_message_sent[chat_id] in ['qq', 'cq', 'mqc']:
             update.message.reply_text("🙏 Please do not interrupt quiz session.")
             
         elif previous_message_sent[chat_id] == 'ir':
+            logger.info("{} - user reported issue".format(update.message.chat_id))
             update.message.reply_text("Thanks for repoting issue it will be resolved shortly. Until then try out something else.\n<b>Click - /services</b>", parse_mode=ParseMode.HTML)
             issue_alert_email_sender(update.message.text, update.message.from_user.full_name)
 
@@ -93,9 +95,9 @@ def text_message_handler(update: Update, _:CallbackContext):
             update.message.reply_text(get_message("mm"), reply_markup=InlineKeyboardMarkup(inline_keyboards["mm"]))
             return
 
-        print("Using google api")
+        logger.info("{} - requesting Dialogflow API".format(update.message.chat_id))
         reply = get_reply(update.message.text, chat_id)
-        print(reply)
+        logger.info("{} - sending Dialogflow API response to user".format(update.message.chat_id))
         update.message.reply_text(reply)
 
     
@@ -113,13 +115,11 @@ def option_selector(update: Update, context: CallbackContext):
     try:
         if previous_message_sent[chat_id] == "s":
             query.edit_message_reply_markup(reply_markup=None)
+            
             # Do you know part
             with open("Resources/Stickers/thinking_fish.tgs", "rb") as sticker:
                 query.message.reply_sticker(sticker)
-            #query.message.reply_text(get_message("kh"), parse_mode=ParseMode.HTML)
-
-            #time.sleep(1)
-            #query.message.reply_text(get_message("mm"))
+                
             query.message.reply_text(get_message("kh"), parse_mode=ParseMode.HTML)
             time.sleep(1)
             query.message.reply_text(get_message("mm"), reply_markup=InlineKeyboardMarkup(inline_keyboards['mm']), parse_mode=ParseMode.HTML)
@@ -132,7 +132,6 @@ def option_selector(update: Update, context: CallbackContext):
             return
 
         elif previous_message_sent[chat_id] == 'cq' or previous_message_sent[chat_id] == 'qq':
-            print("inside cq/qq")
 
             if recieved_query == '0':
                 query.edit_message_text("What else you want to do?", reply_markup=None)
@@ -143,8 +142,7 @@ def option_selector(update: Update, context: CallbackContext):
                 query.edit_message_text(message, parse_mode=ParseMode.HTML)
                 query.edit_message_reply_markup(markup)
             except Exception as E:
-                #print("EXP = ", E)
-                #print("markp = ", markup)
+                """When only text message is needed to update or the quiz session is being terminated"""
                 pass
 
             if len(parameters[chat_id]) == 4:
@@ -152,17 +150,19 @@ def option_selector(update: Update, context: CallbackContext):
                     query.message.reply_sticker(sticker)
                 query.message.reply_text("Here comes your first question.")
 
-                print("Initializing quiz")
+                logger.info("{} - Initializing single player quiz".format(chat_id))
                 single_player_quiz_initiator(chat_id, context)
 
         elif previous_message_sent[chat_id] == 'mqc':
             
             if recieved_query == "1":
+                # User selected to start the quiz
                 try:
                     query.edit_message_reply_markup(reply_markup=None)
                 except:
                     pass
-                print("Initiating multiplayer quiz competition")
+
+                logger.info("{} - user requested to join multiplayer battle".format(chat_id))
 
                 #Starting multiplayer quiz
                 multiplayer_quiz_initiator(chat_id, context)
@@ -173,10 +173,10 @@ def option_selector(update: Update, context: CallbackContext):
                 previous_message_sent[chat_id] = 'mm'
             
             elif recieved_query.endswith("-2"):
+                # user skipped the multiplayer quiz question
+                logger.info("{} - multiplayer quiz question skipped".format(chat_id))
+                
                 query.edit_message_reply_markup(reply_markup=None)
-                print(recieved_query[:-2])
-                print(type(recieved_query[:-2]))
-                print(recieved_query)
                 ongoing_multiplayer_quiz_objects[int(recieved_query[:-2])].send_question(chat_id, context)
         
         elif previous_message_sent[chat_id] == 'qe' and recieved_query == "0":
@@ -192,14 +192,13 @@ def option_selector(update: Update, context: CallbackContext):
 def poll_handler(update: Update, context = CallbackContext):
 
     answers = update.poll.options
-    #update.callback_query.edit_message_reply_markup()
     answers = [answer['voter_count'] for answer in answers]
     ans_idx = answers.index(1)
     try:
         chat_id = context.bot_data[update.poll.id]["chat_id"]
         message_id = context.bot_data[update.poll.id]["message_id"]
     except KeyError:
-        # when poll is answered after the quiz is ended (Only possible with question of unlimited time)
+        # when poll is answered after the quiz is ended (Only possible with question(s) of unlimited time)
         return
     
     try:
@@ -207,25 +206,24 @@ def poll_handler(update: Update, context = CallbackContext):
     except KeyError:
         # when question answered is of single player battle
         pass
-
-    logger.info("{} - quiz answer recieved".format(chat_id))
     
     # Single-Player quiz answer processing
     if previous_message_sent[chat_id] == 'cq' or previous_message_sent[chat_id] == 'qq':
+        logger.info("{} - single player quiz answer recieved".format(chat_id))
+        
         single_player_quiz_objects[chat_id].recieved_answer_processor(ans_idx, context)
     
     # Multiplayer quiz answer processing
     elif previous_message_sent[chat_id] == 'mqc' and previous_question_message_id[chat_id] == message_id:
-        print("\n\nPoll recieved")
-        print(answers)
-        print(ans_idx)
+        logger.info("{} - multiplayer quiz answer recieved".format(chat_id))
+        
         bot.editMessageReplyMarkup(chat_id, message_id = message_id, reply_markup = None)
+        
         try:
             ongoing_multiplayer_quiz_objects[multiplayer_quiz_id].recieved_answer_processor(ans_idx, chat_id, context)
-        except Exception as E:
-            print("Poll reply markup editor - ", E)
-        #ongoing_multiplayer_quiz_objects[multiplayer_quiz_id].recieved_answer_processor(ans_idx, chat_id, context)
-    
+        except Exception as exp:
+            logger.info("exception occurred - {}".format(exp))
+        
 
 
 def image_handler(update: Update, _:CallbackContext):
@@ -242,11 +240,11 @@ def announcement_initiator(update: Update, _: CallbackContext):
 
     # Checking whether admin is sending the message or not
     if validate_admin(update.message.chat_id):
-        update.message.reply_text("Hello, admin please send the message you want anoounce 🗣 among <b>all users</b> of the bot.", parse_mode=ParseMode.HTML)
+        logger.info("{} - announce command initiated by admin".format(update.message.chat_id))
+        
+        update.message.reply_text("Hello, admin please send the message you want announce 🗣 among <b>all users</b> of the bot.\n\n<b>Note: If announcement contains image then send text message in caption of image.</b>", parse_mode=ParseMode.HTML)
         previous_message_sent[update.message.chat_id] = 'ann' # announcement
         logger.info("{} - announce command initiated by admin".format(update.message.chat_id))
-    else:
-        pass
 
 
 def main():

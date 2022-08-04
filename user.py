@@ -29,7 +29,7 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 logger = logging.getLogger(__name__)
 
 
-bot = Bot(token="SAMLE")
+bot = Bot(token="SAMPLE")
 
 message = {
     "kh" : "<b>Are you <i>Knowledge Hungry</i></b>, What do you think?\nWhy not test your intellect with some brain teasing challenges💪🧠",
@@ -192,26 +192,23 @@ schedule.every(24).hours.do(dummy_fun)
 
 def scheduled_functions_handler():
     while len(schedule.get_jobs())>0:
-        #print("Running from global - ", threading.current_thread(), " - ", len(schedule.get_jobs()))
         
         time.sleep(1)
-        #print("Inside loop - window_closer_scheduler id = {} = ".format(self.multiplayer_quiz_id), threading.current_thread())
         try:
             schedule.run_pending()
-        except Exception as E:
-            print("\n\n Inside the except of run_pending - ", E)
+        except Exception as exp:
+            logger.info("exception occured - ".format(exp))
 
     # Killing the thread intentionally
     try: 
         raise BaseException("\n\nKilling the window cloasing thread")
     except:
-        print("\nthis is the except block of window sending thread - ", threading.current_thread(), "\n")
         pass 
 
 scheduler_thread = threading.Thread(target=scheduled_functions_handler)
 scheduler_thread.setName("SchedulerThread")
 scheduler_thread.start()
-logger.info("Scheduler Thread Initiated")
+logger.info("SchedulerThread initiated")
 
 
 ################### PLAYER CLASS #############################
@@ -244,10 +241,7 @@ class Player:
         
         def filler(sizes):
             """Used to label wedges of pie chart with their numeric value via a lambda function"""
-            print("\nFILLER")
-            print("correct = ", correct)
-            print("correct = ", correct)
-            print("correct - int(correct)  ---> ", correct - int(correct))
+        
             if correct.is_integer():
                 if self.flag == 0:
                     self.flag += 1
@@ -276,33 +270,6 @@ class Player:
         bio.name = "pie_chart"
         plt.savefig(bio, transparent=True, dpi=150)
 
-        ##### Converting the 'RGB' image into 'RGBA' format & then removing background ############
-        #bio.seek(0)
-
-        #image = Image.open(bio)
-        #image.convert('RGBA')
-        
-        #bio.flush()
-        #bio.close()
-
-        #data = image.getdata()
-        #new_data = []
-        
-        # Removing white background of the pie chart image
-        #for pixel_triplet in data:
-        #    if pixel_triplet[0] == 255 and pixel_triplet[1] == 255 and pixel_triplet[2] == 255: 
-        #        new_data.append((255, 255, 255, 0))
-        #    else:
-        #        new_data.append(pixel_triplet)
-
-        #image.putdata(new_data)
-
-        # Saving new image again in IO Buffer
-        #bio = BytesIO()
-        #bio.name = "pie_chart"
-        
-        #image.save(bio, 'PNG')
-
         # Sending the sticker to the Player
         bio.seek(0)
         bot.send_sticker(self.chat_id, bio)
@@ -311,8 +278,8 @@ class Player:
 
 
     def result_generator(self, start_time, topic_id, is_single_player_result = True):
-        print("\nINSIDE result generator - ", threading.current_thread())
-
+        # Logging
+        logger.info("{} - generating and sending result".format(self.chat_id))
 
         if self.is_result_generated:
             return schedule.CancelJob
@@ -353,10 +320,6 @@ class Player:
         previous_message_sent[self.chat_id] = 'qe'
         return schedule.CancelJob
 
-    # i=not useful
-    def print_result(self):
-        print("Result Details",self.total_questions, self.not_answered_ques, self.correct_answers, self.time_per_que, sep='\n')
-
 ###############################################################
 
 ################### QUIZ CONDUCTING CLASSES #############################
@@ -381,8 +344,9 @@ class Quiz:
         if self.parameters[2] is not None:
             url += "&difficulty=" + str(self.parameters[2])
         url += "&encode=url3986"
-        
-        print(url)
+
+        # Logging 
+        logger.info("generating questions from Open Trivia API")
         
         # Open Trivia Database API
         r = urlopen(url)
@@ -390,11 +354,11 @@ class Quiz:
         data = json.loads(data)
         
         if data["response_code"] != 0:
-            print("Insufiicient no of questions please use less no of questions")
+            logger.info("unable to generate questions from Open Trivia API")
             return
+
         data = data["results"]
         
-        #print(data)
         for que_dict in data:
             options = [unquote(opt) for opt in que_dict.get('incorrect_answers')]
             correct_answer = unquote(que_dict.get('correct_answer'))
@@ -407,11 +371,8 @@ class Quiz:
     def check_answer(self, que_idx, answered_idx):
         """ans_idx is the index of answered question by the user of bot"""
         que = list(self.questions.keys())[que_idx-1] # decremented by 1 because current que_idx is of next question.
-        #print(que)
-        #print(self.questions[que])
-        #print(answered_idx)
+    
         if self.questions[que][1] == answered_idx:
-            print("correct")
             return True
         else:
             return False
@@ -425,7 +386,6 @@ class SinglePlayer(Quiz):
     def __init__(self, parameters, chat_id):
         super().__init__(parameters)
         super().generate_questions()
-        print("object created")
 
         self.player = Player(chat_id, self.parameters[1])
         self.timer_thread = None
@@ -437,14 +397,18 @@ class SinglePlayer(Quiz):
         if next_que_idx is not None:
             
             if next_que_idx < self.player.que_idx:
-                print("IF - Next question index", next_que_idx, threading.current_thread())
-                print("NEXT QUE IDX - ", next_que_idx)
+                # When user already answered the question and 
+                # scheduled send question need not to be executed
                 return schedule.CancelJob
 
             if next_que_idx == self.parameters[1] and self.player.is_result_generated is False:
+                # Last question answered and result is to be generated
                 self.player.result_generator(self.start_time, self.parameters[0])
 
                 return  schedule.CancelJob
+
+        # Logging 
+        logger.info("{} - sending multiplayer quiz question".format(self.player.chat_id))
 
         que = list(self.questions.keys())[self.player.que_idx]
 
@@ -458,8 +422,6 @@ class SinglePlayer(Quiz):
                 type = Poll.QUIZ, 
                 correct_option_id = self.questions[que][1]
             )
-            
-            print("\ncalled from(" +  str(self.player.que_idx+1)+ ") - ", threading.current_thread(), "\n")
         
         else:
             # Limited time limt question ( With Timer)
@@ -474,7 +436,6 @@ class SinglePlayer(Quiz):
             )
 
             self.timer_scheduler(context, self.player.que_idx + 1)
-            #print("\ncalled from(" +  str(self.player.que_idx+1)+ ") - ", threading.current_thread(), "\n")
             
             
         payload = {
@@ -483,7 +444,6 @@ class SinglePlayer(Quiz):
         context.bot_data.update(payload)
 
         self.player.que_idx += 1
-        print("INDEX INCREMENTED")
         
         return schedule.CancelJob
 
@@ -492,7 +452,6 @@ class SinglePlayer(Quiz):
 
         # Reducing not_answered_ques by 1 b/c initially not_answered_ques stores total no of questions
         self.player.not_answered_ques -= 1
-        print("Inside recieved answer processor - ", self.player.not_answered_ques)
         
         try:
             if super().check_answer(self.player.que_idx, answered_idx):
@@ -501,14 +460,11 @@ class SinglePlayer(Quiz):
             self.send_question(context)
         
         except IndexError: # Index of list out of range when all questions are sent
-            # Implementing RESULT GENERATION 
-            print("\n\n - Intitating result generation process - ", IndexError.__class__,  "\n\n")
-            
-            #self.is_result_sent = True
+            # Implementing RESULT GENERATION
             self.player.result_generator(self.start_time, self.parameters[0])
         
         except Exception as exp:
-            print("New exception ocuured - ", exp, ", with class - ", exp.__class__)
+            logger.info("exception occured - ".format(exp))
 
     def timer_scheduler(self, context, next_que_idx):
         if next_que_idx == self.parameters[1]:
@@ -523,7 +479,6 @@ class Multiplayer(Quiz):
     def __init__(self):
         super().__init__([9, 15, None])
         super().generate_questions()
-        print("Mulptiplayer object created")
 
         self.multiplayer_quiz_id = None
         # self.players = {chat_id : obj of Players class}
@@ -554,7 +509,6 @@ class Multiplayer(Quiz):
             global ongoing_multiplayer_quiz_objects
             self.multiplayer_quiz_id = int(data[0]["max"] + 1) + len(ongoing_multiplayer_quiz_objects.keys())
         
-        print("ID generated successfully - ", self.multiplayer_quiz_id)
 
     def joining_request_reciever(self, chat_id, context):
         if chat_id in self.players.keys():
@@ -563,8 +517,6 @@ class Multiplayer(Quiz):
         
         self.players[chat_id] = Player(chat_id, 15)
         self.players[chat_id].total_questions = 15
-
-        print(self.players)
 
         if len(self.players.keys()) == 20: # max 20 players in a multiplayer battle
             self.window_closer(context)
@@ -576,17 +528,15 @@ class Multiplayer(Quiz):
 
         self.is_leaderboard_generated = True
 
-        print("\nInside leader board generator - ", threading.current_thread())
+        # Logging 
+        logger.info("generating leaderboard of multiplayer quiz with id = {}".format(self.multiplayer_quiz_id))
         
         # Rank wise sorting of players
         for chat_id, player in self.players.items():
             self.players_score.append((chat_id, player.correct_answers / player.time_per_que * 300))
-
-        print("self.players_score = ", self.players_score)
         
         self.players_score = sorted(self.players_score, key=lambda x:x[1], reverse=True)
 
-        print(self.players_score)
         # Name extraction from database of top 3 players
         top_players_name = []
         
@@ -594,13 +544,7 @@ class Multiplayer(Quiz):
             data = execute_query("select player_name from MULTIPLAYER_QUIZ_PARTICIPANTS_NAME where chat_id={};".format(chat_id))
             top_players_name.append(data[0]["player_name"])
 
-        #Entering Dummy data
-        
-        #top_players_name.append("Player 3")
-        print(top_players_name)
-
-        print("# Editing the podium image")
-
+        # Reading the podium image anding adding the name of top three player's on it 
         bgr = cv2.imread("Resources/podium.jpg")
         rgb = cv2.cvtColor(bgr, cv2.COLOR_RGB2BGR)
 
@@ -609,30 +553,25 @@ class Multiplayer(Quiz):
         text_size = cv2.getTextSize(top_players_name[0], font_style, 2, 3)[0]
         X = int((rgb.shape[0] - text_size[0])/2)
         image_arr = cv2.putText(rgb, top_players_name[0], (X, 180), font_style, 2, (0,0,0), 3, cv2.LINE_AA, False)
-        print(X)
         
         # SECOND Player name editing
         text_size = cv2.getTextSize(top_players_name[1], font_style, 2, 3)[0]
         X = int(4/5 * rgb.shape[0] - 1/2 * text_size[0])
         image_arr = cv2.putText(rgb, top_players_name[1], (X, 285), font_style, 2, (0,0,0), 3, cv2.LINE_AA, False)
-        print(X)
 
         # Third Player name editing ---> Need to edit it
         text_size = cv2.getTextSize(top_players_name[2], font_style, 2, 3)[0]
         X = int(1/5 * rgb.shape[0] - 1/2 * text_size[0])
         image_arr = cv2.putText(rgb, top_players_name[2], (X, 335), font_style, 2, (0,0,0), 3, cv2.LINE_AA, False)
-        print(X)
 
         #buffer write
         image = Image.fromarray(image_arr)
         from io import BytesIO
         bio = BytesIO()
         bio.name = 'edited_podium_buffer.jpeg'
-        print("image.mode = ", image.mode)
 
         # If image is other than RGB than converting it to RGB format
         if image.mode != 'RGB':
-            print("Converting to RGB")
             image = image.convert('RGB')
 
         # Generating ranklist to participants of multiplayer quiz bot
@@ -653,10 +592,12 @@ class Multiplayer(Quiz):
         
         # Sending the image and leaderboard to all participants of the bot
         for chat_id, _ in self.players_score:
+            # Logging 
+            logger.info("{} - sending leaderboard of multiplayer quiz with id - {}".format(chat_id, self.multiplayer_quiz_id))
+
             image.save(bio, 'PNG')
             bio.seek(0)
             bot.send_photo(chat_id, photo=bio)
-            print("Image sent successfully - ", chat_id)
             
             if previous_message_sent[chat_id] == 'qe':
                 bot.send_message(chat_id, rank_list, reply_markup = InlineKeyboardMarkup(inline_keyboards['qe']) ,parse_mode=ParseMode.HTML)
@@ -667,11 +608,12 @@ class Multiplayer(Quiz):
     def multiplayer_quiz_closer(self):
         """Quiz closing function"""
         if self.is_quiz_compeleted or len(self.players.keys()) < 3:
-            print("Leaderboard generator called id = {}- ".format(self.multiplayer_quiz_id), threading.current_thread())
             return schedule.CancelJob
 
         self.is_quiz_compeleted = True
-        print("Initiating multiplayer quiz closer")
+        
+        # Logging
+        logger.info("ending mutilplayer quiz with id - {}".format(self.multiplayer_quiz_id)) 
 
         for chat_id in self.players.keys():
             
@@ -687,9 +629,12 @@ class Multiplayer(Quiz):
             # Generating leaderboard podium image and the rank list
             self.leaderboard_generator()
             
+        
+        # Logging 
+        logger.info("updating multiplayer record on database with id - {}".format(self.multiplayer_quiz_id))
+        
         # Updating database
         execute_query("insert into MULTIPLAYER_QUIZ_RECORDS values({:d}, {:d}, current_timestamp);".format(self.multiplayer_quiz_id, len(self.players.keys())))
-        print("Multiplayer record data updated successfully")
         
         try:
             for chat_id, score in self.players_score:
@@ -700,8 +645,8 @@ class Multiplayer(Quiz):
                                                     self.players[chat_id].time_per_que,
                                                     self.players_score.index((chat_id, score)) + 1      
                 ))
-        except Exception as E:
-            print("Inside player records updation in database - ", E)
+        except Exception as exp:
+            logger.info("exception occurred - ".format(exp))
 
 
         # Deletion of multiplayer object 
@@ -712,12 +657,13 @@ class Multiplayer(Quiz):
 
     def remaining_time_alter(self):
         if self.is_quiz_compeleted or len(self.players.keys()) < 3:
-            print("remaining time alert called id = {}- ".format(self.multiplayer_quiz_id), threading.current_thread())
             return schedule.CancelJob
 
-        print("Remaining from id = {}- ".format(self.multiplayer_quiz_id), threading.current_thread())
         for chat_id in self.players.keys():
             if self.players[chat_id].is_result_generated is False:
+                # Logging
+                logger.info("{} - sending last minute alter of multiplayer quiz battle".format(chat_id))
+                
                 bot.send_message(chat_id, "<b>Last 1 minute remaining</b>", parse_mode = ParseMode.HTML)
 
         return schedule.CancelJob
@@ -726,10 +672,11 @@ class Multiplayer(Quiz):
     def send_question(self, chat_id, context):
         if self.is_quiz_compeleted:
             return
+        
         try:
             question = list(self.questions.keys())[self.players[chat_id].que_idx]
-        except Exception as E:
-            print("Last question skipped - ", E)
+        
+        except Exception as E: # Array index out of bounds
             # Generating result
             self.players[chat_id].result_generator(self.start_time, 0, is_single_player_result = False)
             self.players_quiz_completed_count += 1
@@ -737,14 +684,14 @@ class Multiplayer(Quiz):
             # Cheking if all the user has compeleted the quiz for closing the quiz
             
             if self.players_quiz_completed_count == len(self.players.keys()):
-                print("All users compeleted the quiz - Generating the leaderboard.")
                 #logic of leaderboard sending 
                 if self.is_quiz_compeleted is False:
                     self.multiplayer_quiz_closer()
-
             return 
 
- 
+        # Logging
+        logger.info("{} - sending multiplayer quiz question".format(chat_id))
+
         message = bot.send_poll(
                 chat_id, 
                 question = "({}) ".format(self.players[chat_id].que_idx + 1) + question, 
@@ -763,18 +710,12 @@ class Multiplayer(Quiz):
         # Setting message for checking whether the answer recieved by the user is of recently asked question or not
         global previous_question_message_id
         previous_question_message_id[chat_id] = message.message_id
-        print(previous_question_message_id)
 
-        print("################### ongoing battle objects #################")
-        print(ongoing_multiplayer_quiz_objects)
         self.players[chat_id].que_idx += 1
-        print("Ques index  = ", self.players[chat_id].que_idx)
 
 
     def recieved_answer_processor(self, answered_idx, chat_id, context):
         self.players[chat_id].not_answered_ques -= 1
-        print("Inside recieved answer processor of MULTIPLAYER QUIZ - ", self.players[chat_id].not_answered_ques)
-
 
         if super().check_answer(self.players[chat_id].que_idx, answered_idx):
             self.players[chat_id].correct_answers += 1      
@@ -783,7 +724,6 @@ class Multiplayer(Quiz):
 
     def window_closer(self, context):
         if self.is_window_closed:
-            print("Window closer called id = {}- ".format(self.multiplayer_quiz_id), threading.current_thread())
             return schedule.CancelJob
 
         global opened_window_multiplayer_object 
@@ -791,6 +731,8 @@ class Multiplayer(Quiz):
         # Constraint of minimum 3 players to start a multiplayer quiz battle
         
         if len(self.players.keys()) < 3:
+            logger.info("terminaiting multiplayer quiz(id - {}) due to insufficient players".format(self.multiplayer_quiz_id))
+            
             for chat_id in self.players.keys():
                 bot.send_message(chat_id, "Sorry, Insuficient no of players.You can take single player quiz.\n<b>Click - /solo_quiz</b>", parse_mode = ParseMode.HTML)
                 previous_message_sent[chat_id] = 'qe'
@@ -798,13 +740,12 @@ class Multiplayer(Quiz):
             return schedule.CancelJob
 
         self.is_window_closed = True
-        print("Window closer, id = {} - ".format(self.multiplayer_quiz_id), threading.current_thread())
         self.is_window_open = False
+        
         self.start_time = time.time()
+        
         for chat_id in self.players.keys():
             self.send_question(chat_id, context)
-
-        print("Quiz compeleted players count = ", self.players_quiz_completed_count)
         
         global ongoing_multiplayer_quiz_objects
         
@@ -813,8 +754,6 @@ class Multiplayer(Quiz):
         return schedule.CancelJob
 
     def window_closer_scheduler(self, context):
-        
-        print("window_cloaser_scheduler id = {} - ".format(self.multiplayer_quiz_id), threading.current_thread())
         # Scheduling the functions
 
         # Window closer 
@@ -826,11 +765,11 @@ class Multiplayer(Quiz):
         # Leaderboard generator
         schedule.every(7 + 6*60 + 60).seconds.do(self.multiplayer_quiz_closer)
         
-        # Multiplayer objects deletion functions
-        #print(schedule.get_jobs())
 
     def window_opener(self, chat_id, context):
         # Joining the first player of the multiplayer quiz competition 
+        logger.info("initiating multiplayer quiz with id - {}".format(self.multiplayer_quiz_id))
+        
         self.joining_request_reciever(chat_id, context)
 
         self.window_closer_scheduler(context)
@@ -842,15 +781,12 @@ class Multiplayer(Quiz):
 
 def parameters_accepter(chat_id, parameter):
 
-    print("Inside parameters_acceptor with parameter = ", parameter)
     # if user want to terminate the quiz session(parameter = 0)
     if parameter == "0":
         # resend the "mm" label message
-        print("0")
-        print(type(parameter))
         bot.send_message(chat_id, get_message("mm"), reply_markup=InlineKeyboardMarkup(inline_keyboards['mm']))
         previous_message_sent[chat_id] = "mm"
-        print(previous_message_sent)
+        logger.info("{} - terminating quiz session".format(chat_id))
         return None, None
 
     try:
@@ -860,13 +796,11 @@ def parameters_accepter(chat_id, parameter):
             parameters[chat_id].append(int(parameter))
         else:
             parameters[chat_id].append(parameter)
-        print(parameters)
     
     except Exception as exp:
         # Just for security purpose exception will not arise
-        print("New exception ocuured - ", exp, ", with class - ", exp.__class__)
+        logger.info("{} - exception occurred - {}".format(chat_id, exp))
 
-    print("parameter accepter")
     if len(parameters[chat_id]) == 1:
         ###### Solo Quiz only takes one parameter of topic so rest will be given here  #########
         
@@ -905,9 +839,8 @@ def single_player_quiz_initiator(chat_id, context):
 def summary_generator(chat_id):
 
     summary = "<b>Selected parameter of the quiz</b>\n\n<i>Topic : </i> "
-    print("Parameters list\n")
-    for ele in parameters[chat_id]:
-        print(ele, " , type =  ", type(ele))
+    logger.info("{} - generating summary".format(chat_id))
+    
     if parameters[chat_id][0] is not None:
         summary += "<b>{}</b>\n".format(topics[parameters[chat_id][0]])
     else:
@@ -934,22 +867,19 @@ def set_player_name(chat_id, name):
     """Saves the users alias(Player name - Public) to the database and,
         send the option to start multiplayer battle with rules."""
 
-    print("Inside - set player name")
-    
     for letter in name:
         if letter.isalnum() or letter in ['@', '-', '_']:
-            print("l - ", letter)
             continue
         else:
             bot.send_message(chat_id, "<b>Invalid Name</b>", parse_mode=ParseMode.HTML)
             bot.send_message(chat_id, "Please send valid name. Refer above 👆 instructions")
             return
 
-    print("Adding name to database ")
+    logger.info("{} - adding player name to database".format(chat_id))
     execute_query("insert into MULTIPLAYER_QUIZ_PARTICIPANTS_NAME values({:d}, \'{}\');".format(chat_id, name))
     bot.send_message(chat_id, "Name added successfully 😃")
 
-    # Multiplayer quiz starting message
+    # Multiplayer quiz starting message with instructions
     bot.send_message(
                 chat_id, get_message('mqc').format(name), 
                 reply_markup = InlineKeyboardMarkup(inline_keyboards['mqc']), 
@@ -957,20 +887,17 @@ def set_player_name(chat_id, name):
             )
 
     previous_message_sent[chat_id] = 'mqc'
-    print("updated successfully")
 
-    # sending multiplayer quiz instruction
 
 def multiplayer_quiz_initiator(chat_id, context):
     global opened_window_multiplayer_object
-    print(opened_window_multiplayer_object)
     
     if opened_window_multiplayer_object is None:
-        print("Creating new window")
+        logger.info("{} - creating multiplayer window".format(chat_id))
         opened_window_multiplayer_object = Multiplayer()
         opened_window_multiplayer_object.window_opener(chat_id, context)
     else:
-        print("Adding player to opened window")
+        logger.info("{} - adding player to existing window".format(chat_id))
         opened_window_multiplayer_object.joining_request_reciever(chat_id, context)
 
 
@@ -983,18 +910,15 @@ def get_message(label):
 def update_chat_id(chat_id):
     data = execute_query("select * from ARRIVED_USERS where chat_id={};".format(chat_id))
     if len(data) > 0:
-        print("found")
         return
     data = execute_query("insert into ARRIVED_USERS values({});".format(chat_id))
-    print(data)
-    print("update chat id function")
+    logger.info("{} - new user arrived".format(chat_id))
 
 ########### Progress analysis generating funcions #################
 
 def graph_generator(chat_id, marks, quiz_index, topic_wise_bar_colors):
     
     ########### Creating the graph - Bar plot #############
-    print(threading.current_thread())
     plt.figure(figsize=(18, 12))
     plt.style.use("fivethirtyeight")
 
@@ -1080,7 +1004,6 @@ def players_pa_generator(chat_id):
         quiz_count = 15
     elif len(data) > 0:
         quiz_count = len(data)
-        print("Less tham 15")
     else:
         # User has not taken part in single player quiz till now. So, returing
         bot.send_message(chat_id, "<b>Sorry, but haven't taken part in any single player quiz.</b>\nTo take quiz click - /solo_quiz", parse_mode=ParseMode.HTML)
@@ -1092,10 +1015,6 @@ def players_pa_generator(chat_id):
     topic_wise_bar_colors = [bar_colors_topic_wise[int(row['topic'])] for row in data[-quiz_count:]]
     quiz_index = [data.index(row)+1 for row in data[-quiz_count:]]
 
-    
-    print(topic_wise_bar_colors)
-    print(marks)
-    print(quiz_index)
 
     # Sending the graph to the user
     graph_generator(chat_id, marks, quiz_index, topic_wise_bar_colors)
@@ -1157,6 +1076,8 @@ def players_pa_generator(chat_id):
     bot.send_message(chat_id, message, parse_mode=ParseMode.HTML, reply_markup=InlineKeyboardMarkup(inline_keyboards["qe"]))
     previous_message_sent[chat_id] = "qe"
 
+    logger.info("{} - sending progress report".format(chat_id))
+
 ########### Multiplayer Leaderboard Generator #####################
 
 def multiplayer_quiz_ranking_generator(chat_id):
@@ -1185,7 +1106,6 @@ def multiplayer_quiz_ranking_generator(chat_id):
     current_player_score = None
 
     for index, row in enumerate(data):
-        print(rank_alloter(index+1), row["player_name"], " - {:.2f}".format(row["avg_score"]))
 
         if current_player_rank is None:
             if int(row["chat_id"]) == chat_id:
@@ -1243,23 +1163,24 @@ def multiplayer_quiz_ranking_generator(chat_id):
 
     previous_message_sent[chat_id] = "qe"
 
+    logger.info("{} - sending multiplayer performance report & leaderboard ranking".format(chat_id))
+
 
 def main_menu_handler(chat_id, option):
-    print("main_menu_handler")
+    
     if option == 2:
-        print("opt")
+        logger.info("{} - accepting configrations for practice arena quiz".format(chat_id))
         previous_message_sent[chat_id] = 'cq'
         parameters[chat_id] = []
         bot.send_message(chat_id, "<i><b>WELCOME TO PRACTICE ARENA</b></i> \nselect your topic", reply_markup=InlineKeyboardMarkup(inline_keyboards["cq-1"]), parse_mode=ParseMode.HTML)
 
     elif option == 1:
-        print("opt - 1")
+        logger.info("{} - accepting topic for solo quiz".format(chat_id))
         previous_message_sent[chat_id] = 'qq'
         parameters[chat_id] = []
         bot.send_message(chat_id, "<i><b>WELCOME TO SOLO QUIZ</b></i> \nSelect your topic", reply_markup=InlineKeyboardMarkup(inline_keyboards["cq-1"]), parse_mode=ParseMode.HTML)
 
     elif option == 3:
-        print("Multiplayer online quiz")
 
         """ Checking whether name exist in multiplayer or not and if name 
         doesn't exist then it will send message to get player name
@@ -1267,7 +1188,7 @@ def main_menu_handler(chat_id, option):
 
 
         data = execute_query("select player_name from MULTIPLAYER_QUIZ_PARTICIPANTS_NAME where chat_id={};".format(chat_id)) 
-        print("data = ", data)
+        
 
         if len(data) == 0:
             previous_message_sent[chat_id] = 'pnr' # pnr = player name recieving
@@ -1287,10 +1208,12 @@ def main_menu_handler(chat_id, option):
         
     elif option == 4:
         # Progress Analysis 
+        logger.info("{} - generating progress report".format(chat_id))
         players_pa_generator(chat_id)
 
     elif option == 5:
         # Multiplayer quiz leaderboard
+        logger.info("{} - generating multipalyer quiz report".format(chat_id))
         multiplayer_quiz_ranking_generator(chat_id)
         
 
@@ -1303,3 +1226,4 @@ def main_menu_handler(chat_id, option):
 
         previous_message_sent[chat_id] = 'ir'
 
+        

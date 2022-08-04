@@ -1,6 +1,4 @@
 
-from telegram import InlineKeyboardButton, ParseMode
-from telegram.inline.inlinekeyboardmarkup import InlineKeyboardMarkup
 from telegram import Bot
 
 from database import execute_query
@@ -23,6 +21,8 @@ def admin_login():
 
 ######### Announcement ################
 def announcement(message_to_announce, admin_chat_id, image=None):
+
+    logger.info("sending announcements")
 
     data = execute_query("select * from ARRIVED_USERS where chat_id!={};".format(admin_chat_id))
 

@@ -1,3 +1,4 @@
+from distutils.util import execute
 import psycopg2
 import psycopg2.extras
 import logging 
@@ -17,6 +18,8 @@ DB_PASS = "SAMPLE"
 def execute_query(query):
     
     # Connecting with the database
+    #logger.info("connecting with database & executing the query")
+
     conn = psycopg2.connect(dbname=DB_NAME, user=DB_USER, password=DB_PASS, host=DB_HOST)
 
     with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
@@ -25,22 +28,21 @@ def execute_query(query):
             cur.execute(query)
 
         except Exception as exp:
-            print("Exception occured")
+            logger.info("error occured in database query")
             logging.error(exp)
         
         try:
             data = cur.fetchall()
-            print(data)
-            print(type(data))
+            logger.info("data fetched from database")
             
         except psycopg2.ProgrammingError:
             # when no result to be fetched like the insert query
             data = None
-            print("Nothing recieved back.")
+            logger.info("data added/updated on database")
 
         except Exception as exp:
-            print("New exception ocuured - ", exp, ", with class - ", exp.__class__)
-            
+            pass
+        
     conn.commit()
     conn.close()
     
