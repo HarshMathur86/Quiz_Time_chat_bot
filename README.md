@@ -8,4 +8,4 @@
 
  - The bot is deployed in ***Heroku Cloud***.
 
-**Here are some snapshots of the bot**
+## Here are some snapshots of the bot
