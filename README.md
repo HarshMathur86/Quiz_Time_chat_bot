@@ -7,3 +7,5 @@
    - **Mailjet API** - For sending emails to administrator of the bot.
 
  - The bot is deployed in ***Heroku Cloud***.
+
+**Here are some snapshots of the bot**
