@@ -1,2 +1,2 @@
 # Quiz Time chat bot
-Multiplayer and single player quiz conducting telegram based bot.
+ - Quiz time bot is a quiz conducting telegram based bot. Capable of conducting quizzes in single player as well as multiplayer modes and can also generate detailed progress report of the user.
