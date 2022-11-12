@@ -10,4 +10,4 @@
 
 ## Here are some snapshots of the bot
 ![alt text](https://github.com/HarshMathur86/bot-resources/blob/main/Quiz%20bot%20images/Image%201.png?raw=true)
-<img src="https://github.com/HarshMathur86/bot-resources/blob/main/Quiz%20bot%20images/Image%201.png?raw=true" width="989" height="720">
+
