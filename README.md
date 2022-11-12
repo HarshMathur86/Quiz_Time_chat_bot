@@ -9,5 +9,8 @@
  - The bot is deployed in ***Heroku Cloud***.
 
 ## Here are some snapshots of the bot
+
 ![alt text](https://github.com/HarshMathur86/bot-resources/blob/main/Quiz%20bot%20images/Image%201.png?raw=true)
 
+ - Bot offers its users all kinds of customizations on the quizzes asked to them for better improvment of their knowledge.
+ ![](https://github.com/HarshMathur86/bot-resources/blob/main/Quiz%20bot%20images/Image%202.png)
