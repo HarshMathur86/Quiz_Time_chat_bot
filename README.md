@@ -18,7 +18,10 @@
  ![](https://github.com/HarshMathur86/bot-resources/blob/main/Quiz%20bot%20images/Image%202.png)
 
 
- - ***Single player quiz sessions generate result of the users and record user's performance. When can later be used for generating detailed progess report of the user the image is generated in real time using python's image processing libraries like OpenCV & Pillow.***
+ - ***Single player quiz sessions generate result of the users and record user's performance. Which can later be used for generating detailed progess report of the user the image is generated in real time using python's image processing libraries like OpenCV & Pillow.***
 
 
 ![Image 3](https://user-images.githubusercontent.com/60878060/201585132-b0ba2b08-6109-43d9-ace5-40d202b83f32.png)
+
+
+![Image 4](https://user-images.githubusercontent.com/60878060/201585784-d9bb637a-5bd9-4166-8e4b-b555630a84a4.png)
