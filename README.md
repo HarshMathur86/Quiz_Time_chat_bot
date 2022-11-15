@@ -11,6 +11,7 @@
 ## Here are some snapshots of the bot
 
 ![alt text](https://github.com/HarshMathur86/bot-resources/blob/main/Quiz%20bot%20images/Image%201.png?raw=true)
+![Image 6](https://user-images.githubusercontent.com/60878060/201970897-517b58e8-7d1b-48c0-8d29-174bae9c6100.png)
 
 ### Single Player Quiz
  - ***Bot offers its users all kinds of customizations on the quizzes asked to them for better improvment of their knowledge.***
@@ -25,4 +26,3 @@
 <br>
 <img src="https://user-images.githubusercontent.com/60878060/201585784-d9bb637a-5bd9-4166-8e4b-b555630a84a4.png"/>
 </p>
-![Image 6](https://user-images.githubusercontent.com/60878060/201970897-517b58e8-7d1b-48c0-8d29-174bae9c6100.png)
