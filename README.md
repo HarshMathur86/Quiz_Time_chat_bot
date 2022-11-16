@@ -22,11 +22,10 @@
  - ***Single player quiz sessions generate result of the users and record user's performance. Which can later be used for generating detailed progess report of the user and, the image is generated in real time using python's image processing libraries like OpenCV & Pillow.***
 
 <kbd>
-<p align="center">
 <img src="https://user-images.githubusercontent.com/60878060/201585132-b0ba2b08-6109-43d9-ace5-40d202b83f32.png" height="606" width="645"/>
-<br>
-<img src="https://user-images.githubusercontent.com/60878060/201585784-d9bb637a-5bd9-4166-8e4b-b555630a84a4.png"/>
-</p>
 </kbd>
-### Multiplayer Quiz Session 
-![Image 5](https://user-images.githubusercontent.com/60878060/202222530-7b66709d-e897-4809-bc66-0784e918974a.png)
+<kbd>
+<img src="https://user-images.githubusercontent.com/60878060/201585784-d9bb637a-5bd9-4166-8e4b-b555630a84a4.png"/>
+</kbd>
+ ### Multiplayer Quiz Session 
+ ![Image 5](https://user-images.githubusercontent.com/60878060/202222530-7b66709d-e897-4809-bc66-0784e918974a.png)
