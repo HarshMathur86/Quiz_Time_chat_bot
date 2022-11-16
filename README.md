@@ -30,6 +30,7 @@
 
  ### Multiplayer Quiz Session 
   - **Muliplayer quiz asks same quiestion to all the players and then generate the leaderboard of the quiz where user can see their performance as shown in following image.**
+ 
  ![Image 5](https://user-images.githubusercontent.com/60878060/202222530-7b66709d-e897-4809-bc66-0784e918974a.png)
 
 
