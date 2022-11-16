@@ -14,12 +14,12 @@
 ![Image 6](https://user-images.githubusercontent.com/60878060/201970897-517b58e8-7d1b-48c0-8d29-174bae9c6100.png)
 
 ### Single Player Quiz
- - ***Bot offers its users all kinds of customizations on the quizzes asked to them for better improvment of their knowledge.***
+ - **Bot offers its users all kinds of customizations on the quizzes asked to them for better improvment of their knowledge.**
 
  ![](https://github.com/HarshMathur86/bot-resources/blob/main/Quiz%20bot%20images/Image%202.png)
 
 
- - ***Single player quiz sessions generate result of the users and record user's performance. Which can later be used for generating detailed progess report of the user and, the image is generated in real time using python's image processing libraries like OpenCV & Pillow.***
+ - **Single player quiz sessions generate result of the users and record user's performance. Which can later be used for generating detailed progess report of the user and, the image is generated in real time using python's image processing libraries like OpenCV & Pillow.**
 
 <kbd>
 <img src="https://user-images.githubusercontent.com/60878060/201585132-b0ba2b08-6109-43d9-ace5-40d202b83f32.png" height="606" width="645"/>
@@ -29,4 +29,12 @@
 </kbd>
 
  ### Multiplayer Quiz Session 
+  - **Muliplayer quiz asks same quiestion to all the players and then generate the leaderboard of the quiz where user can see their performance as shown in following image.**
  ![Image 5](https://user-images.githubusercontent.com/60878060/202222530-7b66709d-e897-4809-bc66-0784e918974a.png)
+
+
+
+
+
+
+
