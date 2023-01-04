@@ -32,7 +32,7 @@
  ![Image 5](https://user-images.githubusercontent.com/60878060/202222530-7b66709d-e897-4809-bc66-0784e918974a.png)
  
  ### Admin
-  - **The bot also has a admin who has two more provilages one is admin can make an announcement to all the players of the bot and other is all the technical issues reported by the users of the bot are directed to admin via email.**
+  - **The bot also has a admin who has two more privilages one is admin can make an announcement to all the players of the bot and other is all the technical issues reported by the users of the bot are directed to admin via email.**
 
 ![Image 7](https://user-images.githubusercontent.com/60878060/202370649-845b53d2-c6c2-4e89-883f-b01520b30218.png)
 
