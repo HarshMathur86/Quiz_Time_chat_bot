@@ -4,7 +4,7 @@
  - Following APIs are used in the impelementation of the bot:
    - **Open Trivia Database API** - For generating questions of the quiz
    - **Dialogflow API (Google Cloud)** - For generating conversational responses of the bot.
-   - **Mailjet API** - For sending emails to administrator of the bot.
+   - **Mailjet API** - For emails sending functionality.
 
  - The bot is deployed in ***Heroku Cloud***.
 
