@@ -1,3 +1,4 @@
+import asyncio
 import logging
 from pymongo import MongoClient
 import os
@@ -20,7 +21,9 @@ async def is_chat_id_present(chat_id):
 async def update_chat_id(chat_id):
     try:
         if await is_chat_id_present(chat_id) is False:
-            logging.info(f"{chat_id} - New user arrived")
+            logging.info(f"{chat_id} - MongoDB - New user arrived")
             users_collection.insert_one({"_id": chat_id})
+        else:
+            logging.info(f"{chat_id} - MongoDB - chatID already present existing user")
     except Exception as e:
         logging.error("Exception occurred while inserting chat ID", e)

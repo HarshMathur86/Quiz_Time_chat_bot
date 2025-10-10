@@ -30,7 +30,7 @@ async def update_chat_context(chat_id: str, context: str):
     try:
         expiry_seconds = 3 * 60 * 60
         await redis_client.setex(f"chat_context:{chat_id}", expiry_seconds, context)
-        logging.info(f"Context updated for chat_id={chat_id}")
+        logging.info(f"{chat_id} - Redis - Context updated for chat_id={chat_id}")
     except Exception as e:
         logging.error(f"Error occurred while updating context: {e}")
         traceback.print_exc()
