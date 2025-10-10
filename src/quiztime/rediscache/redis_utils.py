@@ -1,27 +1,44 @@
+import asyncio
 import logging
-from redis.asyncio import Redis
 import os
+from redis import Redis
 
 logging.basicConfig(
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    level=logging.INFO
 )
 
-REDIS_HOST = os.getenv("REDIS_HOST")
-REDIS_PORT = os.getenv("REDIS_PORT")
+REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
+REDIS_PORT = os.getenv("REDIS_PORT", "6379")
+REDIS_PASSWORD = os.getenv("REDIS_PASSWORD")
 
-# Connect to Redis
-# redis_client = rediscache.Redis(host='civil-silkworm-18913.upstash.io', password='AUnhAAIjcDEwMzk5MTcyOTI0OGY0NDYxOWJmYWI5M2NkNTQ0Nzk1OHAxMA', port=6379, ssl=True)
-redis_client = Redis(
-        host=REDIS_HOST,
-        port=REDIS_PORT,
-        # password="sample123",
-        decode_responses=True  # Ensures string responses instead of bytes
-    )
+REDIS_URL = f"redis://{REDIS_HOST}:{REDIS_PORT}"
+if REDIS_PASSWORD:
+    REDIS_URL = f"redis://:{REDIS_PASSWORD}@{REDIS_HOST}:{REDIS_PORT}"
 
-async def update_chat_context(chat_id, context):
+
+redis_client = Redis.from_url(
+    REDIS_URL,
+    decode_responses=True
+)
+
+async def update_chat_context(chat_id: str, context: str):
     try:
-        # await redis_client.hset("chat_context", chat_id, context)
-        await redis_client.setex(f"chat_context:{chat_id}", 3*60*60, context)  # Expiry: 6 hours
+        expiry_seconds = 3 * 60 * 60
+        await redis_client.setex(f"chat_context:{chat_id}", expiry_seconds, context)
+        logging.info(f"Context updated for chat_id={chat_id}")
     except Exception as e:
-        logging.error("Error occurred while updating context", e)
+        logging.error(f"Error occurred while updating context: {e}")
 
+async def main():
+    try:
+        pong = await redis_client.ping()
+        logging.info(f"Connected to Redis: {pong}")
+        await update_chat_context("12345", "Hello from modern Redis client!")
+    except Exception as e:
+        logging.error(f"Redis operation failed: {e}")
+    finally:
+        await redis_client.aclose()
+
+if __name__ == "__main__":
+    asyncio.run(main())
