@@ -1,7 +1,9 @@
 import asyncio
 import logging
 import os
-from redis import Redis
+import traceback
+
+from redis.asyncio import Redis
 
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
@@ -17,8 +19,10 @@ if REDIS_PASSWORD:
     REDIS_URL = f"redis://:{REDIS_PASSWORD}@{REDIS_HOST}:{REDIS_PORT}"
 
 
-redis_client = Redis.from_url(
-    REDIS_URL,
+redis_client = Redis(
+    host=REDIS_HOST,
+    port=int(REDIS_PORT),
+    password=REDIS_PASSWORD,
     decode_responses=True
 )
 
@@ -29,6 +33,7 @@ async def update_chat_context(chat_id: str, context: str):
         logging.info(f"Context updated for chat_id={chat_id}")
     except Exception as e:
         logging.error(f"Error occurred while updating context: {e}")
+        traceback.print_exc()
 
 async def main():
     try:
@@ -38,7 +43,7 @@ async def main():
     except Exception as e:
         logging.error(f"Redis operation failed: {e}")
     finally:
-        await redis_client.aclose()
+        await redis_client.close()
 
 if __name__ == "__main__":
     asyncio.run(main())
