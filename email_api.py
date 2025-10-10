@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 def issue_alert_email_sender(message, username):
 	message = message.replace("\n", "<br>")
 
-	with open("Resources/alert_email.html", "r") as file:
+	with open("src/resources/alert_email.html", "r") as file:
 		html_part = file.read()
 
 	html_part = html_part.replace("[user_issue]", "{}".format(message))
