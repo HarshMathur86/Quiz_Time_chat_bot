@@ -7,6 +7,7 @@ from config import properties_loader as properties
 from mongodb import mongo_utils as mongodb
 from rediscache import redis_utils as rediscache
 from src.quiztime.utils.sticker_utils import send_sticker
+from pyinstrument import Profiler
 
 # Enable logging
 logging.basicConfig(
@@ -23,6 +24,8 @@ async def get_sticker_id(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Sends explanation on how to use the bot."""
     # sending hi sticker
+    pf = Profiler()
+    pf.start()
     logging.info("{} - start command initiated".format(update.message.chat_id))
     await send_sticker(update, properties.HI_STICKER, "HI_STICKER")
 
@@ -34,11 +37,42 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await mongodb.update_chat_id(update.message.chat_id)
 
     # TODO update chat_context in rediscache cache
-    await rediscache.update_chat_context(update.message.chat_id, "cmd_start")
+    await rediscache.update_chat_context(str(update.message.chat_id), "cmd_start")
 
     await update.message.reply_text("<b>I am here to help you improve your proficiency through stunning quizzes.</b>",
                                     reply_markup=InlineKeyboardMarkup(keyboard), parse_mode=ParseMode.HTML)
+    pf.stop()
+    logging.info(" time taken start command - {}".format(pf.last_session.duration))
 
+
+"""async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+
+    pf = Profiler()
+    pf.start()
+
+    logging.info(f"{update.message.chat_id} - start command initiated")
+
+    # --- Sequential part: preserves user-facing order ---
+    await send_sticker(update, properties.HI_STICKER, "HI_STICKER")
+    await update.message.reply_text(
+        f"Hi <b>{update.message.from_user.full_name}!</b>",
+        parse_mode=ParseMode.HTML
+    )
+
+    # --- Concurrent background tasks ---
+    asyncio.create_task(mongodb.update_chat_id(update.message.chat_id))
+    asyncio.create_task(rediscache.update_chat_context(update.message.chat_id, "cmd_start"))
+
+    # --- Sequential final message with keyboard ---
+    keyboard = [[InlineKeyboardButton("CLICK ME", callback_data=0)]]
+    await update.message.reply_text(
+        "<b>I am here to help you improve your proficiency through stunning quizzes.</b>",
+        reply_markup=InlineKeyboardMarkup(keyboard),
+        parse_mode=ParseMode.HTML
+    )
+
+    pf.stop()
+    print(pf.output_text(unicode=True, color=True))"""
 
 
 
