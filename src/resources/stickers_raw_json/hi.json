@@ -1,0 +1,63 @@
+{
+    "update_id": 849020056,
+    "message": {
+        "message_id": 3285918,
+        "from": {
+            "id": 1153728869,
+            "is_bot": false,
+            "first_name": "Harsh",
+            "last_name": "Mathur",
+            "username": "harshmathur86",
+            "language_code": "en"
+        },
+        "chat": {
+            "id": 1153728869,
+            "first_name": "Harsh",
+            "last_name": "Mathur",
+            "username": "harshmathur86",
+            "type": "private"
+        },
+        "date": 1740575332,
+        "forward_origin": {
+            "type": "user",
+            "sender_user": {
+                "id": 5119676430,
+                "is_bot": true,
+                "first_name": "Quiz Time bot",
+                "username": "Quiz_time_multiplayer_bot"
+            },
+            "date": 1740570732
+        },
+        "forward_from": {
+            "id": 5119676430,
+            "is_bot": true,
+            "first_name": "Quiz Time bot",
+            "username": "Quiz_time_multiplayer_bot"
+        },
+        "forward_date": 1740570732,
+        "sticker": {
+            "width": 512,
+            "height": 512,
+            "is_animated": true,
+            "is_video": false,
+            "type": "regular",
+            "thumbnail": {
+                "file_id": "AAMCBQADGQEAATIjjGe_EfOmFJ52g5b_U3R_173bXYW_AAIWGAACgC_5Vb0GCtj39lJ7AQAHbQADNgQ",
+                "file_unique_id": "AQADFhgAAoAv-VVy",
+                "file_size": 3714,
+                "width": 128,
+                "height": 128
+            },
+            "thumb": {
+                "file_id": "AAMCBQADGQEAATIjjGe_EfOmFJ52g5b_U3R_173bXYW_AAIWGAACgC_5Vb0GCtj39lJ7AQAHbQADNgQ",
+                "file_unique_id": "AQADFhgAAoAv-VVy",
+                "file_size": 3714,
+                "width": 128,
+                "height": 128
+            },
+            "file_id": "CAACAgUAAxkBAAEyI4xnvxHzphSedoOW_1N0f9e9212FvwACFhgAAoAv-VW9BgrY9_ZSezYE",
+            "file_unique_id": "AgADFhgAAoAv-VU",
+            "file_size": 9964
+        }
+    }
+}

@@ -1,0 +1,7 @@
+Commands -
+
+TODO: Convert all of this to readme
+
+brew services start mongo-community
+brew services start redis
+

@@ -22,7 +22,7 @@ def start(update: Update, context: CallbackContext) -> None:
     """Send a message when the command /start is issued."""
 
     #sending hi sticker
-    with open("Resources/Stickers/hand_hi.tgs", "rb") as sticker:
+    with open("src/resources/stickers_tgs/hand_hi.tgs", "rb") as sticker:
         update.message.reply_sticker(sticker)
     
     keyboard = [[InlineKeyboardButton("CLICK ME", callback_data=0)]]
@@ -117,7 +117,7 @@ def option_selector(update: Update, context: CallbackContext):
             query.edit_message_reply_markup(reply_markup=None)
             
             # Do you know part
-            with open("Resources/Stickers/thinking_fish.tgs", "rb") as sticker:
+            with open("src/resources/stickers_tgs/thinking_fish.tgs", "rb") as sticker:
                 query.message.reply_sticker(sticker)
                 
             query.message.reply_text(get_message("kh"), parse_mode=ParseMode.HTML)
@@ -146,7 +146,7 @@ def option_selector(update: Update, context: CallbackContext):
                 pass
 
             if len(parameters[chat_id]) == 4:
-                with open("Resources/Stickers/hand_questionmark.tgs", "rb") as sticker:
+                with open("src/resources/stickers_tgs/hand_questionmark.tgs", "rb") as sticker:
                     query.message.reply_sticker(sticker)
                 query.message.reply_text("Here comes your first question.")
 

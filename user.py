@@ -545,7 +545,7 @@ class Multiplayer(Quiz):
             top_players_name.append(data[0]["player_name"])
 
         # Reading the podium image anding adding the name of top three player's on it 
-        bgr = cv2.imread("Resources/podium.jpg")
+        bgr = cv2.imread("resources/podium.jpg")
         rgb = cv2.cvtColor(bgr, cv2.COLOR_RGB2BGR)
 
         # FIRST Player name editing
@@ -619,7 +619,7 @@ class Multiplayer(Quiz):
             
             if self.players[chat_id].is_result_generated is False:
                 
-                with open("Resources/Stickers/clock_showing_crab.tgs", "rb") as sticker:
+                with open("src/resources/stickers_tgs/clock_showing_crab.tgs", "rb") as sticker:
                     bot.send_sticker(chat_id, sticker)
                 
                 bot.send_message(chat_id, "<b>TIMES UP</b>", parse_mode=ParseMode.HTML)
@@ -971,7 +971,7 @@ def graph_generator(chat_id, marks, quiz_index, topic_wise_bar_colors):
     bio.close()
 
     # Reading the color coded blocks image from Resouces and resizing it to attach to the graph
-    blocks = cv2.imread("Resources/color_graph.jpg")
+    blocks = cv2.imread("resources/color_graph.jpg")
     blocks = cv2.cvtColor(blocks, cv2.COLOR_RGB2BGR)
     blocks = cv2.resize(blocks, (900, 510))
 
@@ -1218,7 +1218,7 @@ def main_menu_handler(chat_id, option):
         
 
     elif option == 6:# issue reporting
-        with open("Resources/Stickers/text_please.tgs", "rb") as sticker:
+        with open("src/resources/stickers_tgs/text_please.tgs", "rb") as sticker:
             bot.send_sticker(chat_id, sticker)
 
         # Sending the instructions to the user to write the message which will be send to the admin via email
