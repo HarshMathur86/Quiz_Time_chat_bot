@@ -9,7 +9,7 @@
  - The bot is deployed in ***Heroku Cloud***.
 
 # New architecture(Version 2.0.1)
- - Following is the new Architecture Diagram draft as the new version.
+ - Following is the new Architecture Diagram draft of new version.
 ![](https://github.com/HarshMathur86/bot-resources/blob/main/Quiz%20bot%20images/QuizTimeBot%20Architecture%20v2.png)
 
 ## Here are some snapshots of the bot
