@@ -10,7 +10,7 @@
 
 # New architecture(Version 2.0.1)
  - Following is the new Architecture Diagram draft as the new version.
-![](https://github.com/HarshMathur86/bot-resources/tree/main/Quiz%20bot%20images)
+![](https://github.com/HarshMathur86/bot-resources/blob/main/Quiz%20bot%20images/QuizTimeBot%20Architecture%20v2.png)
 
 ## Here are some snapshots of the bot
 
