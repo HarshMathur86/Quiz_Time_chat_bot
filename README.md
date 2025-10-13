@@ -8,6 +8,9 @@
 
  - The bot is deployed in ***Heroku Cloud***.
 
+# New architecture(Version 2.0.1)
+ - Following is the new Architecture Diagram draft as the new version.
+
 ## Here are some snapshots of the bot
 
 ![alt text](https://github.com/HarshMathur86/bot-resources/blob/main/Quiz%20bot%20images/Image%201.png?raw=true)
