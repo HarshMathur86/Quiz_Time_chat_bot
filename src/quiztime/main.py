@@ -35,6 +35,14 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     )
     asyncio.create_task(mongodb.update_chat_id(update.message.chat_id))
     asyncio.create_task(rediscache.update_chat_context(str(update.message.chat_id), "cmd_start"))
+    #TODO: check pn below design for exception logging
+    """
+    Fire-and-forget safety logging
+        asyncio.create_task(mongodb.update_chat_id(update.message.chat_id)).add_done_callback(
+            lambda t: logging.error(t.exception()) if t.exception() else None
+        )
+
+    """
     keyboard = [[InlineKeyboardButton("CLICK ME", callback_data=0)]]
     await update.message.reply_text(
         "<b>I am here to help you improve your proficiency through stunning quizzes.</b>",
