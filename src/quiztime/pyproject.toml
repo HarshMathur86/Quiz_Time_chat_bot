@@ -1,0 +1,9 @@
+[project]
+name = "quiztime"
+version = "1.2.0"
+description = "Telegram bot for interactive quizzes"
+readme = "README.md"
+requires-python = ">=3.11,<3.13"
+authors = [
+  { name = "Harsh Mathur" }
+]
