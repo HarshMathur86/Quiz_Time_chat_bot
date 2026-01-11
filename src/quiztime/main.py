@@ -7,7 +7,7 @@ from telegram.ext import Application, CommandHandler, ContextTypes, MessageHandl
 from config import properties_loader as properties
 from mongodb import mongo_utils as mongodb
 from rediscache import redis_utils as rediscache
-from src.quiztime.utils.sticker_utils import send_sticker
+from utils import sticker_utils as sticker
 from pyinstrument import Profiler
 
 # Enable logging
@@ -21,14 +21,14 @@ async def get_sticker_id(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         print(f"Sticker ID: {sticker_id}")
         await update.message.reply_text(f"Latest Sticker ID: {sticker_id}")
 
-
+# Application.createTask https://docs.python-telegram-bot.org/en/v20.0a0/telegram.ext.application.html?highlight=create_task#telegram.ext.Application.create_task
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Sends explanation on how to use the bot."""
     pf = Profiler()
     pf.start()
     logging.info("{} - start command initiated".format(update.message.chat_id))
 
-    await send_sticker(update, properties.HI_STICKER, "HI_STICKER")
+    await sticker.send_sticker(update, properties.HI_STICKER, "HI_STICKER")
     await update.message.reply_text(
         "Hi <b>{}!</b>".format(str(update.message.from_user.full_name)),
         parse_mode=ParseMode.HTML
@@ -51,7 +51,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     )
 
     pf.stop()
-    logging.info(" time taken start command - {}".format(pf.last_session.duration))
+    logging.info(" time taken entire start command - {}".format(pf.last_session.duration))
 
 
 

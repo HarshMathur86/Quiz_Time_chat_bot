@@ -20,6 +20,7 @@ async def is_chat_id_present(chat_id):
 
 async def update_chat_id(chat_id):
     try:
+        # await asyncio.sleep(3.5)
         if await is_chat_id_present(chat_id) is False:
             logging.info(f"{chat_id} - MongoDB - New user arrived")
             users_collection.insert_one({"_id": chat_id})
