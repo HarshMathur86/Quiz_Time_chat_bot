@@ -22,6 +22,7 @@ async def get_sticker_id(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         await update.message.reply_text(f"Latest Sticker ID: {sticker_id}")
 
 # Application.createTask https://docs.python-telegram-bot.org/en/v20.0a0/telegram.ext.application.html?highlight=create_task#telegram.ext.Application.create_task
+
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Sends explanation on how to use the bot."""
     pf = Profiler()
@@ -33,16 +34,9 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         "Hi <b>{}!</b>".format(str(update.message.from_user.full_name)),
         parse_mode=ParseMode.HTML
     )
-    asyncio.create_task(mongodb.update_chat_id(update.message.chat_id))
-    asyncio.create_task(rediscache.update_chat_context(str(update.message.chat_id), "cmd_start"))
-    #TODO: check pn below design for exception logging
-    """
-    Fire-and-forget safety logging
-        asyncio.create_task(mongodb.update_chat_id(update.message.chat_id)).add_done_callback(
-            lambda t: logging.error(t.exception()) if t.exception() else None
-        )
+    context.application.create_task(mongodb.update_chat_id(update.message.chat_id))
+    context.application.create_task(rediscache.update_chat_context(str(update.message.chat_id), "cmd_start"))
 
-    """
     keyboard = [[InlineKeyboardButton("CLICK ME", callback_data=0)]]
     await update.message.reply_text(
         "<b>I am here to help you improve your proficiency through stunning quizzes.</b>",

@@ -1,7 +1,7 @@
-import asyncio
 import logging
 from pymongo import MongoClient
 import os
+from quiztime.constant import QTConstants
 
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
@@ -27,4 +27,4 @@ async def update_chat_id(chat_id):
         else:
             logging.info(f"{chat_id} - MongoDB - chatID already present existing user")
     except Exception as e:
-        logging.error("Exception occurred while inserting chat ID", e)
+        logging.error(QTConstants.MONGO_DB_ERROR + " Exception occurred while inserting chat ID", e)

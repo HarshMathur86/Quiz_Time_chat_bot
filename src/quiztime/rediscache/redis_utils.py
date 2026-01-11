@@ -4,6 +4,7 @@ import os
 import traceback
 
 from redis.asyncio import Redis
+from quiztime.constant import QTConstants
 
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
@@ -32,8 +33,8 @@ async def update_chat_context(chat_id: str, context: str):
         await redis_client.setex(f"chat_context:{chat_id}", expiry_seconds, context)
         logging.info(f"{chat_id} - Redis - Context updated for chat_id={chat_id}")
     except Exception as e:
-        logging.error(f"Error occurred while updating context: {e}")
-        traceback.print_exc()
+        logging.error(QTConstants.REDIS_CACHE_ERROR + " Error occurred while updating context: ", e)
+        # traceback.print_exc()
 
 async def main():
     try:
