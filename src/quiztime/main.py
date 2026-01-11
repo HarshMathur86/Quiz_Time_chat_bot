@@ -1,6 +1,3 @@
-import asyncio
-import logging
-
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.constants import ParseMode, StickerFormat
 from telegram.ext import Application, CommandHandler, ContextTypes, MessageHandler, filters
@@ -8,12 +5,9 @@ from config import properties_loader as properties
 from mongodb import mongo_utils as mongodb
 from rediscache import redis_utils as rediscache
 from utils import sticker_utils as sticker
+from utils.logger import log
 from pyinstrument import Profiler
 
-# Enable logging
-logging.basicConfig(
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
-)
 
 async def get_sticker_id(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if update.message.sticker:
@@ -27,7 +21,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Sends explanation on how to use the bot."""
     pf = Profiler()
     pf.start()
-    logging.info("{} - start command initiated".format(update.message.chat_id))
+    log.info("{} - start command initiated".format(update.message.chat_id))
 
     await sticker.send_sticker(update, properties.HI_STICKER, "HI_STICKER")
     await update.message.reply_text(
@@ -45,7 +39,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     )
 
     pf.stop()
-    logging.info(" time taken entire start command - {}".format(pf.last_session.duration))
+    log.info(" time taken entire start command - {}".format(pf.last_session.duration))
 
 
 

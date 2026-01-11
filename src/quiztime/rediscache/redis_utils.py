@@ -1,15 +1,8 @@
 import asyncio
-import logging
 import os
-import traceback
-
 from redis.asyncio import Redis
 from quiztime.constant import QTConstants
-
-logging.basicConfig(
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    level=logging.INFO
-)
+from quiztime.utils.logger import log
 
 REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
 REDIS_PORT = os.getenv("REDIS_PORT", "6379")
@@ -31,18 +24,18 @@ async def update_chat_context(chat_id: str, context: str):
     try:
         expiry_seconds = 3 * 60 * 60
         await redis_client.setex(f"chat_context:{chat_id}", expiry_seconds, context)
-        logging.info(f"{chat_id} - Redis - Context updated for chat_id={chat_id}")
+        log.info(f"{chat_id} - Redis - Context updated for chat_id={chat_id}")
     except Exception as e:
-        logging.error(QTConstants.REDIS_CACHE_ERROR + " Error occurred while updating context: ", e)
+        log.error(QTConstants.REDIS_CACHE_ERROR + " Error occurred while updating context: ", e)
         # traceback.print_exc()
 
 async def main():
     try:
         pong = await redis_client.ping()
-        logging.info(f"Connected to Redis: {pong}")
+        log.info(f"Connected to Redis: {pong}")
         await update_chat_context("12345", "Hello from modern Redis client!")
     except Exception as e:
-        logging.error(f"Redis operation failed: {e}")
+        log.error(f"Redis operation failed: {e}")
     finally:
         await redis_client.close()
 
